@@ -15,6 +15,8 @@
   원본 값 그대로 쓴다(김광일판과 같음).
 """
 import hashlib, os, re, shutil, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import econ_team as ET   # 경제정책팀 휴일 특근 묶음(경제정책팀 저장소 공용 사본, 0-73)
 
 # ---------------------------------------------------------------- 설정값 ---
 REPORTER = "서민선"                       # 노컷 원문 author 메타: 'CBS노컷뉴스 서민선 기자'
@@ -53,8 +55,8 @@ REPLACEMENTS = [
     # 이 판의 본 출입처와 겹치는 당직 그룹은 원본 규칙(DUTY_ONLY_GROUPS = 본 출입처에 없는 것만)으로 자동 제외된다.
     # 0-46: 원본의 EXCLUDE_TERMS(대한체육회·스포츠공정위·모의공정위)는 '공정위' 검색어 오탐용이다. 이 판은 '공정위'를
     # 검색하지 않으니 끈다 — 켜 두면 제목에 '대한체육회'가 든 자기 출입처 기사(문체부 감사·국감 등)까지 통째로 버려진다.
-    (NM, r"EXCLUDE_TERMS = \[\n(?:.*\n)*?\]\n",
-         "EXCLUDE_TERMS = []   # 이 판은 '공정위'를 검색하지 않아 공정위 오탐용 제외어가 필요 없다(생성기, 0-46)\n", 1, True),
+    # 0-73: 원본 EXCLUDE_TERMS 그대로 — 당직으로 '공정위'를 검색하게 됐다(0-46에서 껐던 것을 되돌림).
+    *ET.replacements(NM, RP),   # 0-73: 경제정책팀 휴일 특근 묶음(김광일 출입처 포함)
     (NM, r"BASE_KEYWORDS = \[\n(?:.*\n)*?\]\n", NEW_BASE_KEYWORDS, 1, True),
     (NM, 'TEMP_KEYWORDS = {\n    "대미투자": "2026-09-23",\n}\n',
          "TEMP_KEYWORDS = {}   # 대미투자는 상설 검색어(BASE_KEYWORDS)로 옮겼다\n", 1, False),
@@ -105,8 +107,8 @@ FORBIDDEN = {
 }
 # 생성한 news_monitor.py를 별도 프로세스로 import해 확인할 값(당직·임시 키워드가 꺼진 날짜 기준).
 EXPECT = {
-    "DUTY_ONLY_GROUPS": ['재경부', '국가데이터처', '기획예산처', '국토부', '농식품부'],   # 0-47 — 당직 스위치(본 출입처 제외)
-    "EXCLUDE_TERMS": [],      # 0-46 — 공정위 오탐용 제외어 꺼짐
+    "DUTY_ONLY_GROUPS": ET.duty_only(GROUPS),   # 0-73 — 경제정책팀 묶음 중 이 판 섹션이 아닌 것
+    "EXCLUDE_TERMS": ["대한체육회", "스포츠공정위", "모의공정위"],   # 0-73 — 원본 값(당직으로 공정위를 검색)
     "KEYWORDS": ["산업통상부", "산업부", "중소벤처기업부", "중기부", "개인정보보호위원회", "개인정보위", "개보위", "대미투자"],
     "GROUP_ORDER": GROUPS,
     "RETENTION_DAYS": 45,
