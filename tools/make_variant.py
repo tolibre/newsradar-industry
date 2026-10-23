@@ -33,11 +33,20 @@ NEW_BASE_KEYWORDS = '''BASE_KEYWORDS = [
     # '대미투자'는 기관이 아니라 사안어라 KEYWORD_GROUPS에 넣지 않는다 — 그룹 이름이 곧 '대미투자'가 되고,
     # 클러스터링의 출입처명 토큰·주체 판정 단서에서 빠진다(원본 0-28 '누리호'와 같은 이유).
     "산업통상부", "산업부",
+    # 0-76(10/23 판별 점검, 사용자 "그러자"): 제목 판정 전용 — 10/16~ 풀에서 제목에 있어도 판정 밖이던 산업장관 43·산업차관 24·중기장관 9·개인정보보호위원장 5건 (KEYWORD_MAX_PAGES 0 — 네이버 검색 안 함).
+    "산업장관", "산업차관",
     "중소벤처기업부", "중기부",
+    "중기장관",
     "개인정보보호위원회", "개인정보위", "개보위",
+    "개인정보보호위원장",
     "대미투자",
 ]
 '''
+TITLE_ONLY = ["산업장관", "산업차관", "중기장관", "개인정보보호위원장"]   # 0-76
+NEW_GROUPS_LINE = ("KEYWORD_GROUPS.update(DUTY_KEYWORD_GROUPS)\n"
+                   "KEYWORD_GROUPS.update({'산업장관': '산업부', '산업차관': '산업부', '중기장관': '중기부', '개인정보보호위원장': '개인정보위'})   # 산업부판(생성기, 0-76)\n")
+NEW_MAX_PAGES = ('KEYWORD_MAX_PAGES = {\n    "CBS": 1,\n    '
+                 + ", ".join(f'"{k}": 0' for k in TITLE_ONLY) + ",   # 산업부판(생성기) — 제목 판정 전용(0-76)\n}\n")
 
 # 정부 기관장 이름 씨앗 — 이 저장소 DB는 시작 직후라 학습분이 없다. 원본 DB(당직 기간 포함 90일) 제목의
 # '기관 + 이름 + 직함' 실측(2026-10-15)으로 채운다. DB 학습이 쌓이면 학습분이 우선한다. 인사가 바뀌면 고칠 것.
@@ -58,6 +67,8 @@ REPLACEMENTS = [
     # 0-73: 원본 EXCLUDE_TERMS 그대로 — 당직으로 '공정위'를 검색하게 됐다(0-46에서 껐던 것을 되돌림).
     *ET.replacements(NM, RP),   # 0-73: 경제정책팀 휴일 특근 묶음(김광일 출입처 포함)
     (NM, r"BASE_KEYWORDS = \[\n(?:.*\n)*?\]\n", NEW_BASE_KEYWORDS, 1, True),
+    (NM, "KEYWORD_GROUPS.update(DUTY_KEYWORD_GROUPS)\n", NEW_GROUPS_LINE, 1, False),   # 0-76
+    (NM, 'KEYWORD_MAX_PAGES = {\n    "CBS": 1,\n}\n', NEW_MAX_PAGES, 1, False),   # 0-76
     (NM, 'TEMP_KEYWORDS = {\n    "대미투자": "2026-09-23",\n}\n',
          "TEMP_KEYWORDS = {}   # 대미투자는 상설 검색어(BASE_KEYWORDS)로 옮겼다\n", 1, False),
     # ---- news_monitor.py: 보관 기간 ----
@@ -111,7 +122,9 @@ FORBIDDEN = {
 EXPECT = {
     "DUTY_ONLY_GROUPS": ET.duty_only(GROUPS),   # 0-73 — 경제정책팀 묶음 중 이 판 섹션이 아닌 것
     "EXCLUDE_TERMS": ["대한체육회", "스포츠공정위", "모의공정위"],   # 0-73 — 원본 값(당직으로 공정위를 검색)
-    "KEYWORDS": ["산업통상부", "산업부", "중소벤처기업부", "중기부", "개인정보보호위원회", "개인정보위", "개보위", "대미투자"],
+    "KEYWORDS": ["산업통상부", "산업부", "산업장관", "산업차관", "중소벤처기업부", "중기부", "중기장관",
+                 "개인정보보호위원회", "개인정보위", "개보위", "개인정보보호위원장", "대미투자"],
+    "KEYWORD_MAX_PAGES": {"CBS": 1, **{k: 0 for k in TITLE_ONLY}},   # 0-76
     "GROUP_ORDER": GROUPS,
     "RETENTION_DAYS": 45,
     "BYLINE_NAME": REPORTER,
