@@ -1,0 +1,9 @@
+{
+  "note": "뉴스레이다 산업부판(서민선) '2진' 스위치(0-81) — 생성기가 만들지 않는 파일(이 저장소에 직접 둔다). second.groups = '2진' 스위치가 붙이는 당직 그룹(news_monitor.py DUTY_KEYWORD_GROUPS 값 — tools/make_variant.py KIM_FULL). links는 비워 둔다.",
+  "links": [],
+  "second": {
+    "label": "2진",
+    "who": "김광일",
+    "groups": ["공정위", "방미통위", "방미심위", "과기정통부", "국가AI전략위", "우주항공청"]
+  }
+}

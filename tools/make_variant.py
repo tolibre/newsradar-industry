@@ -45,8 +45,41 @@ NEW_BASE_KEYWORDS = '''BASE_KEYWORDS = [
 TITLE_ONLY = ["산업장관", "산업차관", "중기장관", "개인정보보호위원장"]   # 0-76
 NEW_GROUPS_LINE = ("KEYWORD_GROUPS.update(DUTY_KEYWORD_GROUPS)\n"
                    "KEYWORD_GROUPS.update({'산업장관': '산업부', '산업차관': '산업부', '중기장관': '중기부', '개인정보보호위원장': '개인정보위'})   # 산업부판(생성기, 0-76)\n")
+
+# 0-81 '2진'(사용자 2026-10-30 10:07 "서민선 판에도 2진 도입하자. 서민선 2진에는 김광일 판 키워드를 전부 넣어줘"):
+# 이 판의 휴일 특근 묶음 중 김광일 몫을 김광일판 검색어 전부로 넓힌다 — 0-78 방미심위·국가AI전략위 포함.
+# 'CBS'·'나이영'은 회사 기사라 뺀다(econ_team.py와 같은 이유). **이 판만** — econ_team.py 공용 사본(다른 세 판)은 그대로.
+# 제목 판정 전용어(원본 TITLE_ONLY_KEYWORDS)는 당직 수집에서도 네이버를 검색하지 않는다(KEYWORD_MAX_PAGES 0, 구글 RSS만).
+# '2진' 스위치가 붙일 그룹은 이 저장소의 live_links.json "second"(생성기가 만들지 않는 파일 — 저장소에 직접 둔다).
+KIM_FULL = [("공정거래위원회", "공정위"), ("공정위", "공정위"), ("공정거래위원장", "공정위"),
+            ("방송미디어통신위원회", "방미통위"), ("방미통위", "방미통위"), ("방송미디어통신위원장", "방미통위"),
+            ("방송미디어통신심의위원회", "방미심위"), ("방미심위", "방미심위"),
+            ("방송미디어통신심의위", "방미심위"), ("방심위", "방미심위"),
+            ("과학기술정보통신부", "과기정통부"), ("과기정통부", "과기정통부"), ("과기부", "과기정통부"),
+            ("국가인공지능전략위원회", "국가AI전략위"), ("국가AI전략위원회", "국가AI전략위"), ("국가AI전략위", "국가AI전략위"),
+            ("국가인공지능전략위", "국가AI전략위"), ("AI전략위", "국가AI전략위"),
+            ("우주항공청", "우주항공청"), ("누리호", "우주항공청"), ("우주청", "우주항공청")]
+KIM_TITLE_ONLY = ["공정거래위원장", "방송미디어통신위원장", "방송미디어통신심의위", "방심위",
+                  "국가인공지능전략위원회", "국가AI전략위원회", "국가인공지능전략위", "AI전략위", "우주청"]
+DUTY_MEMBERS = [(n, KIM_FULL if n == "김광일" else kws) for n, kws in ET.MEMBERS]
+assert any(n == "김광일" for n, _ in ET.MEMBERS)
+DUTY_ALL_GROUPS_IND = []
+for _n, _kws in DUTY_MEMBERS:
+    for _k, _g in _kws:
+        if _g not in DUTY_ALL_GROUPS_IND:
+            DUTY_ALL_GROUPS_IND.append(_g)
+DUTY_KEYWORDS_BLOCK = ("DUTY_KEYWORDS = [\n"
+                       "    # 경제정책팀 휴일 특근 묶음(tools/econ_team.py — 생성기가 원본 묶음 자리에 넣는다. 김광일 출입처 포함, 0-73)\n"
+                       "    # 산업부판: 김광일 몫은 김광일판 검색어 전부(0-81 '2진')\n"
+                       + "".join(f"    # {n}\n    " + ", ".join(f'"{k}"' for k, _ in kws) + ",\n" for n, kws in DUTY_MEMBERS)
+                       + "]\n")
+DUTY_GROUPS_BLOCK = ("DUTY_KEYWORD_GROUPS = {\n"
+                     + "".join("    " + ", ".join(f'"{k}": "{g}"' for k, g in kws) + ",\n" for _, kws in DUTY_MEMBERS)
+                     + "}\n")
+
 NEW_MAX_PAGES = ('KEYWORD_MAX_PAGES = {\n    "CBS": 1,\n    '
-                 + ", ".join(f'"{k}": 0' for k in TITLE_ONLY) + ",   # 산업부판(생성기) — 제목 판정 전용(0-76)\n}\n")
+                 + ", ".join(f'"{k}": 0' for k in TITLE_ONLY) + ",   # 산업부판(생성기) — 제목 판정 전용(0-76)\n    "
+                 + ", ".join(f'"{k}": 0' for k in KIM_TITLE_ONLY) + ",   # 0-81 당직(2진) 김광일판 제목 판정 전용\n}\n")
 
 # 정부 기관장 이름 씨앗 — 이 저장소 DB는 시작 직후라 학습분이 없다. 원본 DB(당직 기간 포함 90일) 제목의
 # '기관 + 이름 + 직함' 실측(2026-10-15)으로 채운다. DB 학습이 쌓이면 학습분이 우선한다. 인사가 바뀌면 고칠 것.
@@ -65,7 +98,10 @@ REPLACEMENTS = [
     # 0-46: 원본의 EXCLUDE_TERMS(대한체육회·스포츠공정위·모의공정위)는 '공정위' 검색어 오탐용이다. 이 판은 '공정위'를
     # 검색하지 않으니 끈다 — 켜 두면 제목에 '대한체육회'가 든 자기 출입처 기사(문체부 감사·국감 등)까지 통째로 버려진다.
     # 0-73: 원본 EXCLUDE_TERMS 그대로 — 당직으로 '공정위'를 검색하게 됐다(0-46에서 껐던 것을 되돌림).
-    *ET.replacements(NM, RP),   # 0-73: 경제정책팀 휴일 특근 묶음(김광일 출입처 포함)
+    # 0-73: 경제정책팀 휴일 특근 묶음(김광일 출입처 포함) — 0-81부터 김광일 몫을 넓힌 이 판 묶음(DUTY_MEMBERS)으로.
+    # 기준 문자열·횟수는 ET.replacements와 같다.
+    (NM, r"DUTY_KEYWORDS = \[\n(?:.*\n)*?\]\n", DUTY_KEYWORDS_BLOCK, 1, True),
+    (NM, r"DUTY_KEYWORD_GROUPS = \{\n(?:.*\n)*?\}\n", DUTY_GROUPS_BLOCK, 1, True),
     (NM, r"BASE_KEYWORDS = \[\n(?:.*\n)*?\]\n", NEW_BASE_KEYWORDS, 1, True),
     (NM, "KEYWORD_GROUPS.update(DUTY_KEYWORD_GROUPS)\n", NEW_GROUPS_LINE, 1, False),   # 0-76
     (NM, 'KEYWORD_MAX_PAGES = {\n    "CBS": 1,\n}\n', NEW_MAX_PAGES, 1, False),   # 0-76
@@ -120,11 +156,11 @@ FORBIDDEN = {
 }
 # 생성한 news_monitor.py를 별도 프로세스로 import해 확인할 값(당직·임시 키워드가 꺼진 날짜 기준).
 EXPECT = {
-    "DUTY_ONLY_GROUPS": ET.duty_only(GROUPS),   # 0-73 — 경제정책팀 묶음 중 이 판 섹션이 아닌 것
+    "DUTY_ONLY_GROUPS": [g for g in DUTY_ALL_GROUPS_IND if g not in GROUPS],   # 0-73·0-81 — 묶음 중 이 판 섹션이 아닌 것
     "EXCLUDE_TERMS": ["대한체육회", "스포츠공정위", "모의공정위"],   # 0-73 — 원본 값(당직으로 공정위를 검색)
     "KEYWORDS": ["산업통상부", "산업부", "산업장관", "산업차관", "중소벤처기업부", "중기부", "중기장관",
                  "개인정보보호위원회", "개인정보위", "개보위", "개인정보보호위원장", "대미투자"],
-    "KEYWORD_MAX_PAGES": {"CBS": 1, **{k: 0 for k in TITLE_ONLY}},   # 0-76
+    "KEYWORD_MAX_PAGES": {"CBS": 1, **{k: 0 for k in TITLE_ONLY}, **{k: 0 for k in KIM_TITLE_ONLY}},   # 0-76·0-81
     "GROUP_ORDER": GROUPS,
     "RETENTION_DAYS": 45,
     "BYLINE_NAME": REPORTER,
