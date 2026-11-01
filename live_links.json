@@ -1,5 +1,5 @@
 {
-  "note": "뉴스레이다 산업부판(서민선) '2진' 스위치(0-81) — 생성기가 만들지 않는 파일(이 저장소에 직접 둔다). second.groups = '2진' 스위치가 붙이는 당직 그룹(news_monitor.py DUTY_KEYWORD_GROUPS 값 — tools/make_variant.py KIM_FULL). links는 비워 둔다. assembly: 국회 일정 띠(원본 0-82, 산업부판 0-83) — 산자중기위 전부 + 정무위(김광일 주·서민선 부, 김광일판과 같게 법안심사제1소위만 뺌). name = 열린국회정보 COMMITTEE_NAME 정식명(11/1 실측).",
+  "note": "뉴스레이다 산업부판(서민선) '2진' 스위치(0-81) — 생성기가 만들지 않는 파일(이 저장소에 직접 둔다). second.groups = '2진' 스위치가 붙이는 당직 그룹(news_monitor.py DUTY_KEYWORD_GROUPS 값 — tools/make_variant.py KIM_FULL). links는 비워 둔다. assembly: 국회 일정 띠(원본 0-82, 산업부판 0-83) — 산자중기위 전부 + 정무위(김광일 주·서민선 부, 김광일판과 같게 법안심사제1소위만 뺌). name = 열린국회정보 COMMITTEE_NAME 정식명(11/1 실측). plenary: 본회의도(0-84).",
   "links": [],
   "second": {
     "label": "2진",
@@ -29,6 +29,7 @@
           "법안심사제1소위원회"
         ]
       }
-    ]
+    ],
+    "plenary": true
   }
 }
